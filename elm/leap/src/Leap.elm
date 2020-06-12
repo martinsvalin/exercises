@@ -3,8 +3,11 @@ module Leap exposing (isLeapYear)
 
 isLeapYear : Int -> Bool
 isLeapYear year =
-    case (modBy 400 year, modBy 100 year, modBy 4 year) of
-        (0, _, _) -> True
-        (_, 0, _) -> False
-        (_, _, 0) -> True
-        (_, _, _) -> False
+    every 4 year
+        && not (every 100 year)
+        || every 400 year
+
+
+every : Int -> Int -> Bool
+every period year =
+    modBy period year == 0
