@@ -15,7 +15,7 @@ distance left right =
             toList right
     in
     if length a == length b then
-        map2 (==) a b |> filter (not << identity) |> length |> Ok
+        map2 (/=) a b |> filter identity |> length |> Ok
 
     else
         Err "left and right strands must be of equal length"
