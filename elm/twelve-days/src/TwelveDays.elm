@@ -1,6 +1,8 @@
 module TwelveDays exposing (recite)
 
-import List
+import List exposing (map, range, reverse)
+import List.Extra exposing (getAt)
+import Maybe exposing (withDefault)
 
 
 recite : Int -> Int -> List String
@@ -11,42 +13,60 @@ recite start stop =
 
 verse : Int -> String
 verse n =
-    case n of
-        1 ->
-            "On the first day of Christmas my true love gave to me: a Partridge in a Pear Tree."
+    "On the " ++ ordinal n ++ " day of Christmas my true love gave to me: " ++ aNewGiftAndAllGiftsOfPreviousDays n ++ "."
 
-        2 ->
-            "On the second day of Christmas my true love gave to me: two Turtle Doves, and a Partridge in a Pear Tree."
 
-        3 ->
-            "On the third day of Christmas my true love gave to me: three French Hens, two Turtle Doves, and a Partridge in a Pear Tree."
+ordinal : Int -> String
+ordinal n =
+    getAt (n - 1)
+        [ "first"
+        , "second"
+        , "third"
+        , "fourth"
+        , "fifth"
+        , "sixth"
+        , "seventh"
+        , "eighth"
+        , "ninth"
+        , "tenth"
+        , "eleventh"
+        , "twelfth"
+        ]
+        |> withDefault "nth"
 
-        4 ->
-            "On the fourth day of Christmas my true love gave to me: four Calling Birds, three French Hens, two Turtle Doves, and a Partridge in a Pear Tree."
 
-        5 ->
-            "On the fifth day of Christmas my true love gave to me: five Gold Rings, four Calling Birds, three French Hens, two Turtle Doves, and a Partridge in a Pear Tree."
+aNewGiftAndAllGiftsOfPreviousDays : Int -> String
+aNewGiftAndAllGiftsOfPreviousDays n =
+    range 1 n |> reverse |> map gift |> join
 
-        6 ->
-            "On the sixth day of Christmas my true love gave to me: six Geese-a-Laying, five Gold Rings, four Calling Birds, three French Hens, two Turtle Doves, and a Partridge in a Pear Tree."
 
-        7 ->
-            "On the seventh day of Christmas my true love gave to me: seven Swans-a-Swimming, six Geese-a-Laying, five Gold Rings, four Calling Birds, three French Hens, two Turtle Doves, and a Partridge in a Pear Tree."
+join : List String -> String
+join gifts =
+    case reverse gifts of
+        [] ->
+            ""
 
-        8 ->
-            "On the eighth day of Christmas my true love gave to me: eight Maids-a-Milking, seven Swans-a-Swimming, six Geese-a-Laying, five Gold Rings, four Calling Birds, three French Hens, two Turtle Doves, and a Partridge in a Pear Tree."
+        x :: [] ->
+            x
 
-        9 ->
-            "On the ninth day of Christmas my true love gave to me: nine Ladies Dancing, eight Maids-a-Milking, seven Swans-a-Swimming, six Geese-a-Laying, five Gold Rings, four Calling Birds, three French Hens, two Turtle Doves, and a Partridge in a Pear Tree."
+        last :: rest ->
+            (String.join ", " <| reverse rest) ++ ", and " ++ last
 
-        10 ->
-            "On the tenth day of Christmas my true love gave to me: ten Lords-a-Leaping, nine Ladies Dancing, eight Maids-a-Milking, seven Swans-a-Swimming, six Geese-a-Laying, five Gold Rings, four Calling Birds, three French Hens, two Turtle Doves, and a Partridge in a Pear Tree."
 
-        11 ->
-            "On the eleventh day of Christmas my true love gave to me: eleven Pipers Piping, ten Lords-a-Leaping, nine Ladies Dancing, eight Maids-a-Milking, seven Swans-a-Swimming, six Geese-a-Laying, five Gold Rings, four Calling Birds, three French Hens, two Turtle Doves, and a Partridge in a Pear Tree."
-
-        12 ->
-            "On the twelfth day of Christmas my true love gave to me: twelve Drummers Drumming, eleven Pipers Piping, ten Lords-a-Leaping, nine Ladies Dancing, eight Maids-a-Milking, seven Swans-a-Swimming, six Geese-a-Laying, five Gold Rings, four Calling Birds, three French Hens, two Turtle Doves, and a Partridge in a Pear Tree."
-
-        _ ->
-            "And you should never reach me."
+gift : Int -> String
+gift n =
+    getAt (n - 1)
+        [ "a Partridge in a Pear Tree"
+        , "two Turtle Doves"
+        , "three French Hens"
+        , "four Calling Birds"
+        , "five Gold Rings"
+        , "six Geese-a-Laying"
+        , "seven Swans-a-Swimming"
+        , "eight Maids-a-Milking"
+        , "nine Ladies Dancing"
+        , "ten Lords-a-Leaping"
+        , "eleven Pipers Piping"
+        , "twelve Drummers Drumming"
+        ]
+        |> withDefault "you shall never reach me"
