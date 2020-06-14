@@ -1,6 +1,6 @@
 module Sublist exposing (ListComparison(..), sublist)
 
-import List exposing (length)
+import List exposing (length, take)
 
 
 type ListComparison
@@ -11,45 +11,29 @@ type ListComparison
 
 
 sublist : List a -> List a -> ListComparison
-sublist shortest longest =
-    case compare (length shortest) (length longest) of
-        LT ->
-            case ( shortest, longest ) of
-                ( _, [] ) ->
-                    Unequal
+sublist listA listB =
+    if listA == listB then
+        Equal
 
-                ( _, _ :: longTail ) ->
-                    -- check both current and next, to avoid mistaking a Sublist for Equal
-                    if startSame shortest longest || startSame shortest longTail then
-                        Sublist
+    else if length listA < length listB && isSublist listA listB then
+        Sublist
 
-                    else
-                        sublist shortest longTail
+    else if length listA > length listB && isSublist listB listA then
+        Superlist
 
-        EQ ->
-            if startSame shortest longest then
-                Equal
-
-            else
-                Unequal
-
-        GT ->
-            case sublist longest shortest of
-                Sublist ->
-                    Superlist
-
-                other ->
-                    other
+    else
+        Unequal
 
 
-startSame : List a -> List a -> Bool
-startSame listA listB =
-    case ( listA, listB ) of
-        ( [], _ ) ->
-            True
-
-        ( _, [] ) ->
+isSublist : List a -> List a -> Bool
+isSublist short long =
+    case long of
+        [] ->
             False
 
-        ( x :: tailA, y :: tailB ) ->
-            x == y && startSame tailA tailB
+        _ :: rest ->
+            if short == take (length short) long then
+                True
+
+            else
+                isSublist short rest
