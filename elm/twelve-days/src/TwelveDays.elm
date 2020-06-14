@@ -1,7 +1,7 @@
 module TwelveDays exposing (recite)
 
+import Array exposing (Array, get)
 import List exposing (map, range, reverse)
-import List.Extra exposing (getAt)
 import Maybe exposing (withDefault)
 
 
@@ -13,12 +13,17 @@ recite start stop =
 
 verse : Int -> String
 verse n =
-    "On the " ++ ordinal n ++ " day of Christmas my true love gave to me: " ++ aNewGiftAndAllGiftsOfPreviousDays n ++ "."
+    "On the " ++ ordinal n ++ " day of Christmas my true love gave to me: " ++ wayTooManyGifts n
 
 
 ordinal : Int -> String
 ordinal n =
-    getAt (n - 1)
+    get (n - 1) ordinals |> withDefault "nth"
+
+
+ordinals : Array String
+ordinals =
+    Array.fromList
         [ "first"
         , "second"
         , "third"
@@ -32,41 +37,31 @@ ordinal n =
         , "eleventh"
         , "twelfth"
         ]
-        |> withDefault "nth"
 
 
-aNewGiftAndAllGiftsOfPreviousDays : Int -> String
-aNewGiftAndAllGiftsOfPreviousDays n =
-    range 1 n |> reverse |> map gift |> join
-
-
-join : List String -> String
-join gifts =
-    case reverse gifts of
-        [] ->
-            ""
-
-        x :: [] ->
-            x
-
-        last :: rest ->
-            (String.join ", " <| reverse rest) ++ ", and " ++ last
+wayTooManyGifts : Int -> String
+wayTooManyGifts n =
+    range 1 n |> reverse |> map gift |> String.concat
 
 
 gift : Int -> String
 gift n =
-    getAt (n - 1)
-        [ "a Partridge in a Pear Tree"
-        , "two Turtle Doves"
-        , "three French Hens"
-        , "four Calling Birds"
-        , "five Gold Rings"
-        , "six Geese-a-Laying"
-        , "seven Swans-a-Swimming"
-        , "eight Maids-a-Milking"
-        , "nine Ladies Dancing"
-        , "ten Lords-a-Leaping"
-        , "eleven Pipers Piping"
-        , "twelve Drummers Drumming"
+    get (n - 1) gifts |> withDefault "you shall never reach me, "
+
+
+gifts : Array String
+gifts =
+    Array.fromList
+        [ "a Partridge in a Pear Tree."
+        , "two Turtle Doves, and "
+        , "three French Hens, "
+        , "four Calling Birds, "
+        , "five Gold Rings, "
+        , "six Geese-a-Laying, "
+        , "seven Swans-a-Swimming, "
+        , "eight Maids-a-Milking, "
+        , "nine Ladies Dancing, "
+        , "ten Lords-a-Leaping, "
+        , "eleven Pipers Piping, "
+        , "twelve Drummers Drumming, "
         ]
-        |> withDefault "you shall never reach me"
