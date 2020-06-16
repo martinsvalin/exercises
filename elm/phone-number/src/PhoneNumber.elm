@@ -1,37 +1,91 @@
 module PhoneNumber exposing (getNumber)
 
-import List exposing (filterMap)
-import Regex exposing (Match, Regex, find)
+import Parser exposing (..)
+
+
+type alias PhoneNumber =
+    { countryCode : Maybe String
+    , areaCode : String
+    , localNumber : String
+    }
 
 
 getNumber : String -> Maybe String
 getNumber phoneNumber =
-    case find pattern phoneNumber of
-        -- Regex will give one or zero matches.
-        [ match ] ->
-            Just (join match)
+    case run parser phoneNumber of
+        Ok parsedNumber ->
+            Just (toString parsedNumber)
 
-        _ ->
+        Err _ ->
             Nothing
 
 
-pattern : Regex
-pattern =
-    Maybe.withDefault Regex.never <|
-        Regex.fromString
-            ("^"
-                ++ -- ignore country code
-                   "(?:\\+?1)?"
-                ++ "\\D*"
-                ++ -- area code, leading number is 2-9
-                   "([2-9]\\d{2})"
-                ++ "\\D*"
-                ++ -- local number, leading number is 2-9
-                   "([2-9]\\d{2})\\D*(\\d{4})"
-                ++ "\\D*$"
-            )
+parser : Parser PhoneNumber
+parser =
+    succeed PhoneNumber
+        |= countryCode
+        |= areaCode
+        |= localNumber
+        |. end
 
 
-join : Match -> String
-join =
-    .submatches >> filterMap identity >> String.concat
+toString : PhoneNumber -> String
+toString phone =
+    phone.areaCode ++ phone.localNumber
+
+
+countryCode : Parser (Maybe String)
+countryCode =
+    oneOf
+        [ symbol "+1" |> map (\_ -> Just "1")
+        , symbol "1" |> map (\_ -> Just "1")
+        , succeed Nothing
+        ]
+        |. junk
+
+
+areaCode : Parser String
+areaCode =
+    succeed joinAreaCode
+        |= digitFrom 2
+        |= digitFrom 0
+        |= digitFrom 0
+        |. junk
+
+
+localNumber : Parser String
+localNumber =
+    succeed joinLocalCode
+        |= digitFrom 2
+        |= digitFrom 0
+        |= digitFrom 0
+        |. junk
+        |= digitFrom 0
+        |= digitFrom 0
+        |= digitFrom 0
+        |= digitFrom 0
+        |. junk
+
+
+junk : Parser ()
+junk =
+    chompWhile (not << Char.isDigit)
+
+
+digitFrom : Int -> Parser String
+digitFrom start =
+    let
+        digits =
+            List.range start 9 |> List.map String.fromInt |> String.concat |> String.toList
+    in
+    chompIf (\c -> List.member c digits) |> getChompedString
+
+
+joinAreaCode : String -> String -> String -> String
+joinAreaCode a b c =
+    a ++ b ++ c
+
+
+joinLocalCode : String -> String -> String -> String -> String -> String -> String -> String
+joinLocalCode a b c d e f g =
+    a ++ b ++ c ++ d ++ e ++ f ++ g
