@@ -1,12 +1,13 @@
 module SumOfMultiples exposing (sumOfMultiples)
 
 import List exposing (concat, map, sum)
-import List.Extra exposing (unique)
+import List.Extra exposing (unfoldr, unique)
 
 
 sumOfMultiples : List Int -> Int -> Int
 sumOfMultiples divisors limit =
-    map (multiplesUpTo limit) divisors
+    divisors
+        |> map (multiplesUpTo limit)
         |> concat
         |> unique
         |> sum
@@ -14,13 +15,22 @@ sumOfMultiples divisors limit =
 
 multiplesUpTo : Int -> Int -> List Int
 multiplesUpTo limit number =
-    multiplesUpToHelper [] limit number number
+    unfoldr (nextMultipleUpTo limit) ( number, number )
 
 
-multiplesUpToHelper : List Int -> Int -> Int -> Int -> List Int
-multiplesUpToHelper acc limit number sumSoFar =
+{-|
+
+    Unfoldr can be a bit mind-bending. Here's what's happening:
+    On each iteration, if the condition holds, we return Just (thingToEmit, nextValue), so this will
+    emit `sumSoFar` as long as it's less than the limit.
+    The value we iterate on is a tuple so that we keep both the current sum and the original number.
+    Unfoldr will stop at Nothing. ;-)
+
+-}
+nextMultipleUpTo : Int -> ( Int, Int ) -> Maybe ( Int, ( Int, Int ) )
+nextMultipleUpTo limit ( sumSoFar, number ) =
     if sumSoFar < limit then
-        multiplesUpToHelper (sumSoFar :: acc) limit number (sumSoFar + number)
+        Just ( sumSoFar, ( sumSoFar + number, number ) )
 
     else
-        acc
+        Nothing

@@ -2,7 +2,7 @@ module Tests exposing (tests)
 
 import Expect
 import SumOfMultiples exposing (sumOfMultiples)
-import Test exposing (..)
+import Test exposing (Test, describe, test)
 
 
 tests : Test
