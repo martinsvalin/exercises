@@ -1,10 +1,9 @@
 module LargestSeriesProduct exposing (largestProduct)
 
-import Char exposing (isDigit)
+import Char exposing (isDigit, toCode)
 import List exposing (map, maximum, product)
 import List.Extra exposing (groupsOfWithStep)
 import Maybe exposing (withDefault)
-import Maybe.Extra exposing (combine)
 
 
 {-| Find the larges product from adjacent numbers of the given length within the series. Length must be zero up to series length.
@@ -20,37 +19,36 @@ import Maybe.Extra exposing (combine)
 -}
 largestProduct : Int -> String -> Maybe Int
 largestProduct length series =
-    if length < 0 || String.length series < length then
-        Nothing
+    if validInput length series then
+        Just (calculate length series)
 
     else
-        series
-            |> toDigits
-            |> Maybe.map
-                (groupsOfWithStep length 1
-                    >> map product
-                    >> maximum
-                    >> withDefault 1
-                )
+        Nothing
+
+
+{-| Validate input: Length must zero up to series length, inclusive, and series must be only digits.
+-}
+validInput : Int -> String -> Bool
+validInput length series =
+    0 <= length && length <= String.length series && String.all isDigit series
+
+
+{-| Given a string of digits, calculate the largest product of a group of adjacent numbers of given length
+-}
+calculate : Int -> String -> Int
+calculate length =
+    toDigits
+        >> groupsOfWithStep length 1
+        >> map product
+        >> maximum
+        >> withDefault 1
 
 
 {-| Convert a string consisting of digits 0-9 to a corresponding list of integers
 
-    toDigits "12345" -- Just [1,2,3,4,5]
-
-    toDigits "123abc" -- Nothing
-
-    toDigits "" -- Just []
+    toDigits "12345" -- [1,2,3,4,5]
 
 -}
-toDigits : String -> Maybe (List Int)
+toDigits : String -> List Int
 toDigits =
-    let
-        digitToInt char =
-            if isDigit char then
-                Just (Char.toCode char - Char.toCode '0')
-
-            else
-                Nothing
-    in
-    String.toList >> map digitToInt >> combine
+    String.toList >> map (\char -> toCode char - toCode '0')
