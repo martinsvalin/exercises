@@ -1,14 +1,18 @@
 module Tests exposing (tests)
 
 import Expect
-import Grains exposing (square)
+import Grains exposing (square, total)
 import Test exposing (Test, describe, test)
 
 
 tests : Test
 tests =
     describe "Grains"
-        [ describe "square"
+        [ describe "total" <|
+            [ test "is a string, due to javascript limitations in handling big numbers" <|
+                \() -> Expect.equal "18446744073709551615" total
+            ]
+        , describe "square"
             [ test "of 1" <|
                 \() -> Expect.equal (Just 1) (square 1)
             , test "of 2" <|
@@ -25,6 +29,8 @@ tests =
                 \() -> Expect.equal Nothing (square 0)
             , test "negative square raises an exception" <|
                 \() -> Expect.equal Nothing (square -1)
+            , test "of 64, which is too large for JS to handle" <|
+                \() -> Expect.equal Nothing (square 64)
 
             {-
                Where are the bigger test values?!? Because Javascript's numbers
