@@ -1,5 +1,8 @@
 module Triangle exposing (Triangle(..), triangleKind)
 
+import Result exposing (andThen)
+import Set
+
 
 type Triangle
     = Equilateral
@@ -9,35 +12,38 @@ type Triangle
 
 triangleKind : number -> number -> number -> Result String Triangle
 triangleKind x y z =
-    check x y z |> Result.map kind
+    [ x, y, z ]
+        |> checkLength
+        |> andThen checkTriangleInequality
+        |> andThen determineKind
 
 
-check : number -> number -> number -> Result String ( number, number, number )
-check x y z =
-    let
-        sides =
-            [ x, y, z ]
+checkLength : List number -> Result String (List number)
+checkLength sides =
+    if List.all ((<) 0) sides then
+        Ok sides
 
-        sum =
-            List.sum sides
-    in
-    if List.any (\side -> side <= 0) sides then
+    else
         Err "Invalid lengths"
 
-    else if List.any (\side -> side * 2 >= sum) sides then
+
+checkTriangleInequality : List number -> Result String (List number)
+checkTriangleInequality sides =
+    if List.all (\side -> side * 2 < List.sum sides) sides then
+        Ok sides
+
+    else
         Err "Violates inequality"
 
-    else
-        Ok ( x, y, z )
 
+determineKind : List number -> Result String Triangle
+determineKind sides =
+    case sides |> Set.fromList |> Set.size of
+        1 ->
+            Ok Equilateral
 
-kind : ( number, number, number ) -> Triangle
-kind ( x, y, z ) =
-    if x == y && y == z then
-        Equilateral
+        2 ->
+            Ok Isosceles
 
-    else if x == y || x == z || y == z then
-        Isosceles
-
-    else
-        Scalene
+        _ ->
+            Ok Scalene
