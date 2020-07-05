@@ -24,17 +24,11 @@ type Bearing
 
 type alias Robot =
     { bearing : Bearing
-    , coordinates : Coordinates
+    , coordinates : ( Int, Int )
     }
 
 
-type alias Coordinates =
-    { x : Int
-    , y : Int
-    }
-
-
-type alias Directions =
+type alias Instructions =
     List (Robot -> Robot)
 
 
@@ -45,7 +39,7 @@ type alias Directions =
 defaultRobot : Robot
 defaultRobot =
     { bearing = North
-    , coordinates = { x = 0, y = 0 }
+    , coordinates = ( 0, 0 )
     }
 
 
@@ -83,18 +77,22 @@ turnLeft robot =
 
 advance : Robot -> Robot
 advance robot =
+    let
+        ( x, y ) =
+            robot.coordinates
+    in
     case robot.bearing of
         North ->
-            move robot ( 0, 1 )
+            { robot | coordinates = ( x, y + 1 ) }
 
         East ->
-            move robot ( 1, 0 )
+            { robot | coordinates = ( x + 1, y ) }
 
         South ->
-            move robot ( 0, -1 )
+            { robot | coordinates = ( x, y - 1 ) }
 
         West ->
-            move robot ( -1, 0 )
+            { robot | coordinates = ( x - 1, y ) }
 
 
 simulate : String -> Robot -> Robot
@@ -106,40 +104,17 @@ simulate directions robot =
 -- PRIVATE
 
 
-move : Robot -> ( Int, Int ) -> Robot
-move robot ( dx, dy ) =
-    robot.coordinates
-        |> setX (robot.coordinates.x + dx)
-        |> setY (robot.coordinates.y + dy)
-        |> asCoordinatesIn robot
-
-
-setX : Int -> Coordinates -> Coordinates
-setX x coordinates =
-    { coordinates | x = x }
-
-
-setY : Int -> Coordinates -> Coordinates
-setY y coordinates =
-    { coordinates | y = y }
-
-
-asCoordinatesIn : Robot -> Coordinates -> Robot
-asCoordinatesIn robot coordinates =
-    { robot | coordinates = coordinates }
-
-
-parse : String -> Directions
+parse : String -> Instructions
 parse input =
     case Parser.run (loop [] direction) input of
         Err _ ->
             []
 
-        Ok directions ->
-            directions
+        Ok instructions ->
+            instructions
 
 
-direction : Directions -> Parser (Step Directions Directions)
+direction : Instructions -> Parser (Step Instructions Instructions)
 direction acc =
     oneOf
         [ symbol "L" |> map (\() -> Loop (turnLeft :: acc))
