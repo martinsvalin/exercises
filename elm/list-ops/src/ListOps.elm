@@ -11,18 +11,13 @@ module ListOps exposing
 
 
 length : List a -> Int
-length list =
-    case list of
-        [] ->
-            0
-
-        _ :: xs ->
-            1 + length xs
+length =
+    foldl (\_ -> (+) 1) 0
 
 
 reverse : List a -> List a
-reverse list =
-    foldl (::) [] list
+reverse =
+    foldl (::) []
 
 
 foldl : (a -> b -> b) -> b -> List a -> b
@@ -36,17 +31,17 @@ foldl f acc list =
 
 
 foldr : (a -> b -> b) -> b -> List a -> b
-foldr f acc list =
-    reverse list |> foldl f acc
+foldr f acc =
+    reverse >> foldl f acc
 
 
 map : (a -> b) -> List a -> List b
-map f list =
-    foldr (f >> (::)) [] list
+map f =
+    foldr (f >> (::)) []
 
 
 filter : (a -> Bool) -> List a -> List a
-filter f list =
+filter f =
     let
         consIf x acc =
             if f x then
@@ -55,7 +50,7 @@ filter f list =
             else
                 acc
     in
-    foldr consIf [] list
+    foldr consIf []
 
 
 append : List a -> List a -> List a
@@ -64,5 +59,5 @@ append xs ys =
 
 
 concat : List (List a) -> List a
-concat list =
-    foldr append [] list
+concat =
+    foldr append []
