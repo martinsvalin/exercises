@@ -87,18 +87,21 @@ advance robot =
         coord =
             robot.coordinates
     in
-    case robot.bearing of
-        North ->
-            { robot | coordinates = { x = coord.x, y = coord.y + 1 } }
+    { robot
+        | coordinates =
+            case robot.bearing of
+                North ->
+                    { coord | y = coord.y + 1 }
 
-        East ->
-            { robot | coordinates = { x = coord.x + 1, y = coord.y } }
+                East ->
+                    { coord | x = coord.x + 1 }
 
-        South ->
-            { robot | coordinates = { x = coord.x, y = coord.y - 1 } }
+                South ->
+                    { coord | y = coord.y - 1 }
 
-        West ->
-            { robot | coordinates = { x = coord.x - 1, y = coord.y } }
+                West ->
+                    { coord | x = coord.x - 1 }
+    }
 
 
 simulate : String -> Robot -> Robot
@@ -107,7 +110,7 @@ simulate directions robot =
 
 
 
--- PRIVATE
+-- PARSING
 
 
 parse : String -> Directions
