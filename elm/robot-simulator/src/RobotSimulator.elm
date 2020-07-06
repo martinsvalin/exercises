@@ -24,11 +24,17 @@ type Bearing
 
 type alias Robot =
     { bearing : Bearing
-    , coordinates : ( Int, Int )
+    , coordinates : Coordinates
     }
 
 
-type alias Instructions =
+type alias Coordinates =
+    { x : Int
+    , y : Int
+    }
+
+
+type alias Directions =
     List (Robot -> Robot)
 
 
@@ -39,7 +45,7 @@ type alias Instructions =
 defaultRobot : Robot
 defaultRobot =
     { bearing = North
-    , coordinates = ( 0, 0 )
+    , coordinates = { x = 0, y = 0 }
     }
 
 
@@ -78,21 +84,21 @@ turnLeft robot =
 advance : Robot -> Robot
 advance robot =
     let
-        ( x, y ) =
+        coord =
             robot.coordinates
     in
     case robot.bearing of
         North ->
-            { robot | coordinates = ( x, y + 1 ) }
+            { robot | coordinates = { x = coord.x, y = coord.y + 1 } }
 
         East ->
-            { robot | coordinates = ( x + 1, y ) }
+            { robot | coordinates = { x = coord.x + 1, y = coord.y } }
 
         South ->
-            { robot | coordinates = ( x, y - 1 ) }
+            { robot | coordinates = { x = coord.x, y = coord.y - 1 } }
 
         West ->
-            { robot | coordinates = ( x - 1, y ) }
+            { robot | coordinates = { x = coord.x - 1, y = coord.y } }
 
 
 simulate : String -> Robot -> Robot
@@ -104,17 +110,17 @@ simulate directions robot =
 -- PRIVATE
 
 
-parse : String -> Instructions
+parse : String -> Directions
 parse input =
     case Parser.run (loop [] direction) input of
         Err _ ->
             []
 
-        Ok instructions ->
-            instructions
+        Ok directions ->
+            directions
 
 
-direction : Instructions -> Parser (Step Instructions Instructions)
+direction : Directions -> Parser (Step Directions Directions)
 direction acc =
     oneOf
         [ symbol "L" |> map (\() -> Loop (turnLeft :: acc))
