@@ -1,34 +1,32 @@
 module Triangle exposing (rows)
 
+import List exposing (drop, head, map2, reverse)
+
 
 rows : Int -> List (List Int)
 rows n =
-    if n <= 0 then
-        []
-
-    else
-        buildTriangle [] n
+    buildTriangle [] n
 
 
 buildTriangle : List (List Int) -> Int -> List (List Int)
 buildTriangle acc n =
-    if n == 0 then
-        List.reverse acc
+    if n <= 0 then
+        reverse acc
 
     else
-        case acc of
-            [] ->
-                buildTriangle [ [ 1 ] ] (n - 1)
-
-            previous :: _ ->
-                buildTriangle (expand [] previous :: acc) (n - 1)
+        buildTriangle (expand (head acc) :: acc) (n - 1)
 
 
-expand : List Int -> List Int -> List Int
-expand acc numbers =
+expand : Maybe (List Int) -> List Int
+expand numbers =
     case numbers of
-        x :: y :: rest ->
-            expand (x + y :: acc) (y :: rest)
+        Nothing ->
+            [ 1 ]
 
-        _ ->
-            1 :: List.reverse (1 :: acc)
+        Just nums ->
+            map2 (+) (zeroPad nums) (drop 1 (zeroPad nums))
+
+
+zeroPad : List Int -> List Int
+zeroPad list =
+    0 :: reverse (0 :: list)
