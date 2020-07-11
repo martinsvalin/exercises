@@ -77,4 +77,10 @@ tests =
         , test "reject prefix notation" <|
             \() ->
                 Expect.equal Nothing <| answer "What is plus 1 2?"
+        , test "unary operator negated" <|
+            \() ->
+                Expect.equal (Just -2) <| answer "What is 2 negated?"
+        , test "exponentiation" <|
+            \() ->
+                Expect.equal (Just 125) <| answer "What is 5 raised to the 3rd power?"
         ]
