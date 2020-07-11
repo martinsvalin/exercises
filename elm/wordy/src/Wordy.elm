@@ -23,20 +23,20 @@ answer problem =
 
 
 {-| Evaluate expression
-An expression holds a left-hand-side value and a list of operations with right-hand-side values.
+An expression holds a left-hand-side value and a list of operations and their right-hand-side values.
 Recursively apply operations on the lhs value until the list is empty.
 -}
 eval : Expression -> Int
 eval equation =
     case equation of
-        Expression x [] ->
-            x
+        Expression lhs [] ->
+            lhs
 
-        Expression x ((Binary op y) :: ops) ->
-            eval (Expression (op x y) ops)
+        Expression lhs ((Binary op rhs) :: ops) ->
+            eval (Expression (op lhs rhs) ops)
 
-        Expression x ((Unary op) :: ops) ->
-            eval (Expression (op x) ops)
+        Expression lhs ((Unary op) :: ops) ->
+            eval (Expression (op lhs) ops)
 
 
 
@@ -51,10 +51,11 @@ parse =
         |. token "What is "
         |= number
         |= loop [] operations
+        |. symbol "?"
         |. end
 
 
-{-| Parse an operation with its right-hand-side value, stopping at a final question mark.
+{-| Parse operations with their values
 Supported operations are negation, addition, subtraction, multiplication, division and exponentiation.
 -}
 operations : List Operation -> Parser (Step (List Operation) (List Operation))
@@ -79,7 +80,7 @@ operations ops =
             |= number
             |. oneOf [ token "st", token "nd", token "rd", token "th" ]
             |. token " power"
-        , symbol "?" |> map (\() -> Done (List.reverse ops))
+        , succeed (Done (List.reverse ops))
         ]
 
 
