@@ -24,46 +24,37 @@ say number =
             ( hundreds, tens ) =
                 formatHundreds number
 
-            big =
+            bigString =
                 formatBigNumbers number
                     ++ [ hundreds ]
                     |> List.filterMap identity
                     |> String.join " "
+
+            big =
+                if String.isEmpty bigString then
+                    Nothing
+
+                else
+                    Just bigString
         in
-        case ( big, tens ) of
-            ( "", Nothing ) ->
-                Ok "zero"
-
-            ( _, Nothing ) ->
-                Ok big
-
-            ( "", Just ten ) ->
-                Ok ten
-
-            ( _, Just ten ) ->
-                Ok (big ++ " and " ++ ten)
+        ( big, tens )
+            |> maybeJoin (\a b -> a ++ " and " ++ b)
+            |> Maybe.withDefault "zero"
+            |> Ok
 
 
 formatBigNumbers : Int -> List (Maybe String)
-formatBigNumbers n =
+formatBigNumbers number =
     [ ( 1000000000, " billion" )
     , ( 1000000, " million" )
     , ( 1000, " thousand" )
     ]
         |> List.map
             (\( mod, str ) ->
-                case formatHundreds (modBy (mod * 1000) n // mod) of
-                    ( Nothing, Nothing ) ->
-                        Nothing
-
-                    ( Just hundred, Nothing ) ->
-                        Just (hundred ++ str)
-
-                    ( Nothing, Just ten ) ->
-                        Just (ten ++ str)
-
-                    ( Just hundred, Just ten ) ->
-                        Just <| String.join " and " [ hundred, ten ] ++ str
+                (modBy (mod * 1000) number // mod)
+                    |> formatHundreds
+                    |> maybeJoin (\a b -> a ++ " and " ++ b)
+                    |> Maybe.map (\c -> c ++ str)
             )
 
 
@@ -128,3 +119,19 @@ format number =
         , ( 90, "ninety" )
         ]
         |> Dict.get number
+
+
+maybeJoin : (a -> a -> a) -> ( Maybe a, Maybe a ) -> Maybe a
+maybeJoin f ( maybeA, maybeB ) =
+    case ( maybeA, maybeB ) of
+        ( Just a, Just b ) ->
+            Just (f a b)
+
+        ( Just a, Nothing ) ->
+            Just a
+
+        ( Nothing, Just b ) ->
+            Just b
+
+        ( Nothing, Nothing ) ->
+            Nothing
