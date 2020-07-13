@@ -45,20 +45,15 @@ defmodule Say do
   @thousand 1000
   @million 1_000_000
   @billion 1_000_000_000
+  defp say(n) when n < @thousand, do: big(n, @hundred, " hundred")
+  defp say(n) when n < @million, do: big(n, @thousand, " thousand")
+  defp say(n) when n < @billion, do: big(n, @million, " million")
+  defp say(n) when n < @max, do: big(n, @billion, " billion")
 
-  @big_numbers [
-    {@hundred, @thousand, " hundred"},
-    {@thousand, @million, " thousand"},
-    {@million, @billion, " million"},
-    {@billion, @max, " billion"}
-  ]
-
-  for {lower, upper, string} <- @big_numbers do
-    defp say(n) when n < unquote(upper) do
-      case rem(n, unquote(lower)) do
-        0 -> say(div(n, unquote(lower))) <> unquote(string)
-        small -> say(n - small) <> " " <> say(small)
-      end
+  defp big(n, unit, string) do
+    case rem(n, unit) do
+      0 -> say(div(n, unit)) <> string
+      small -> say(n - small) <> " " <> say(small)
     end
   end
 end
