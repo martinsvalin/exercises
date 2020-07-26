@@ -1,12 +1,10 @@
 object Pangram {
-    val ALPHABET = "abcdefghijklmnopqrstuvwxyz".toCharArray().toSet()
+    private val ALPHABET = ('a'..'z').toSet()
 
     fun isPangram(input: String): Boolean {
         return input
             .toLowerCase()
-            .toCharArray()
-            .toSet()
-            .intersect(ALPHABET)
-            .size == 26
+            .toList()
+            .containsAll(ALPHABET)
     }
 }
