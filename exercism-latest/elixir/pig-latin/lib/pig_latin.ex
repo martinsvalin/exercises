@@ -1,4 +1,7 @@
 defmodule PigLatin do
+  defguard is_vowel(char) when char in 'aeiou'
+  defguard is_consonant(char) when not is_vowel(char)
+
   @doc """
   Given a `phrase`, translate it a word at a time to Pig Latin.
 
@@ -23,15 +26,15 @@ defmodule PigLatin do
 
   def translate('qu' ++ rest), do: rest ++ 'quay'
 
-  def translate([consonant, ?q, ?u | rest]) when consonant not in 'aeiou',
-    do: rest ++ [consonant | 'quay']
+  def translate([char, ?q, ?u | rest]) when is_consonant(char),
+    do: rest ++ [char | 'quay']
 
-  def translate([?y, consonant | _] = word) when consonant not in 'aeiou', do: word ++ 'ay'
-  def translate([?x, consonant | _] = word) when consonant not in 'aeiou', do: word ++ 'ay'
-  def translate(word) when hd(word) in 'aeiou', do: word ++ 'ay'
+  def translate([?y, char | _] = word) when is_consonant(char), do: word ++ 'ay'
+  def translate([?x, char | _] = word) when is_consonant(char), do: word ++ 'ay'
+  def translate(word) when hd(word) |> is_vowel(), do: word ++ 'ay'
 
   def translate(word) do
-    prefix = Enum.take_while(word, &(&1 not in 'aeiou'))
+    prefix = Enum.take_while(word, &is_consonant/1)
     Enum.drop(word, length(prefix)) ++ prefix ++ 'ay'
   end
 end
